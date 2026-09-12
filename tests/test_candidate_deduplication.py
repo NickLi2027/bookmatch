@@ -1,136 +1,97 @@
 from bookmatch.models.book import EnrichedBook
-from bookmatch.models.book_candidate import BookCandidate
-from bookmatch.services.candidate_deduplication import (
-    deduplicate_candidates,
+from bookmatch.services.candidate_display_deduplication import (
+    deduplicate_display_candidates,
 )
 
 
-def make_candidate(
+def create_book(
     title: str,
-    author: str | None = "Test Author",
+    author: str | None = None,
     isbn: str | None = None,
-    provider: str = "Test Provider",
-) -> BookCandidate:
-    return BookCandidate(
-        book=EnrichedBook(
-            title=title,
-            author=author,
-            publication_date=None,
-            isbn=isbn,
-            description=None,
-            source=provider,
-        ),
-        provider=provider,
+) -> EnrichedBook:
+    return EnrichedBook(
+        title=title,
+        author=author,
+        publication_date=None,
+        isbn=isbn,
+        description=None,
+        source="Test",
     )
 
 
-def test_removes_candidates_with_same_isbn():
-    first = make_candidate(
-        title="Example Book",
-        isbn="9781234567890",
-        provider="Google Books",
-    )
-    second = make_candidate(
-        title="Example Book",
-        isbn="9781234567890",
-        provider="Open Library",
+def test_removes_duplicate_display_candidates_with_same_title_and_author() -> None:
+    first = create_book(
+        title="16 Forever",
+        author="Lance Rubin",
+        isbn="9780000000001",
     )
 
-    result = deduplicate_candidates([first, second])
+    second = create_book(
+        title="16 Forever",
+        author="Lance Rubin",
+        isbn="9780000000002",
+    )
+
+    result = deduplicate_display_candidates(
+        [first, second]
+    )
 
     assert result == [first]
 
 
-def test_removes_candidates_with_same_title_and_author_when_isbn_missing():
-    first = make_candidate(
-        title="Example Book",
-        author="Test Author",
-        provider="Google Books",
-    )
-    second = make_candidate(
-        title="Example Book",
-        author="Test Author",
-        provider="Open Library",
+def test_keeps_display_candidates_with_different_authors() -> None:
+    first = create_book(
+        title="Dog Man",
+        author="Dav Pilkey",
+        isbn="9780000000001",
     )
 
-    result = deduplicate_candidates([first, second])
-
-    assert result == [first]
-
-
-def test_keeps_candidates_with_different_isbn():
-    first = make_candidate(
-        title="Example Book",
-        isbn="9781234567890",
-    )
-    second = make_candidate(
-        title="Example Book",
-        isbn="9780987654321",
+    second = create_book(
+        title="Dog Man",
+        author="Maurice Procter",
+        isbn="9780000000002",
     )
 
-    result = deduplicate_candidates([first, second])
+    result = deduplicate_display_candidates(
+        [first, second]
+    )
 
     assert result == [first, second]
 
 
-def test_keeps_candidates_with_different_authors():
-    first = make_candidate(
-        title="Example Book",
-        author="Author One",
-    )
-    second = make_candidate(
-        title="Example Book",
-        author="Author Two",
+def test_keeps_display_candidates_with_different_titles() -> None:
+    first = create_book(
+        title="16 Forever",
+        author="Lance Rubin",
     )
 
-    result = deduplicate_candidates([first, second])
+    second = create_book(
+        title="16 Steps to Forever",
+        author="Georgia Beers",
+    )
+
+    result = deduplicate_display_candidates(
+        [first, second]
+    )
 
     assert result == [first, second]
 
 
-def test_title_and_author_matching_is_case_insensitive():
-    first = make_candidate(
-        title="Example Book",
-        author="Test Author",
-    )
-    second = make_candidate(
-        title=" example   book ",
-        author="test author",
+def test_preserves_first_candidate_when_duplicates_are_found() -> None:
+    first = create_book(
+        title="16 Forever",
+        author="Lance Rubin",
+        isbn="9780000000001",
     )
 
-    result = deduplicate_candidates([first, second])
-
-    assert result == [first]
-
-
-def test_does_not_merge_different_books_with_same_author():
-    first = make_candidate(
-        title="Book One",
-        author="Test Author",
-    )
-    second = make_candidate(
-        title="Book Two",
-        author="Test Author",
+    second = create_book(
+        title=" 16   FOREVER ",
+        author=" lance rubin ",
+        isbn="9780000000002",
     )
 
-    result = deduplicate_candidates([first, second])
-
-    assert result == [first, second]
-
-def test_removes_duplicate_when_one_candidate_has_no_isbn():
-    first = make_candidate(
-        title="Example Book",
-        author="Test Author",
-        isbn="9781234567890",
-        provider="Google Books",
+    result = deduplicate_display_candidates(
+        [first, second]
     )
-    second = make_candidate(
-        title="Example Book",
-        author="Test Author",
-        isbn=None,
-        provider="Open Library",
-    )
-
-    result = deduplicate_candidates([first, second])
 
     assert result == [first]
