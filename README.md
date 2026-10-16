@@ -4,6 +4,16 @@ BookMatch is a Python application for identifying, enriching, and classifying bo
 
 The current system combines multi-source book retrieval, candidate resolution, human-in-the-loop selection, an OpenAI classification agent, and an independent Gemini review agent.
 
+## Background and Real-World Use
+
+BookMatch grew out of my work with the Briarcliff Book Donation Association, a student-led initiative that organizes children's book drives to support local communities.
+
+Over the past three years, our book drives have collected more than 3,000 donated books. As the collection grew, I realized that collecting books was only part of the challenge. We also needed to identify which books were appropriate for different ages and reading levels so that they could be matched more thoughtfully with the children receiving them.
+
+I developed BookMatch to help address this problem. Given a book's title, and optionally its author or ISBN, the system retrieves book information and recommends an age group, age range, reading difficulty, and genre. When a book cannot be identified confidently, the user can select from possible matches. A separate AI reviewer then checks the classification for potential inconsistencies.
+
+BookMatch currently operates as a command-line tool for classifying individual books. It is designed to support the book-sorting and matching process, with human review remaining part of the workflow. It is not yet an automated distribution system.
+
 ## Features
 
 - Accepts a book title, optional author, and optional ISBN
@@ -262,14 +272,15 @@ data/
 
 ## Installation
 
-Clone the repository:
+Clone the BookMatch repository and switch to the Phase 2 development branch:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/NickLi2027/bookmatch.git
 cd bookmatch
+git switch phase-2-agentic-ai
 ```
 
-Install dependencies:
+Install the project dependencies using [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync
@@ -284,6 +295,8 @@ GEMINI_API_KEY=your_gemini_api_key
 ```
 
 Do not commit `.env` or API keys to source control.
+
+The `phase-2-agentic-ai` branch contains the current multi-source book retrieval, human-in-the-loop identification, AI classification, and independent reviewer workflow.
 
 ## Usage
 
